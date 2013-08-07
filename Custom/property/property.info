@@ -1,0 +1,5 @@
+name = Property Module
+description = Module to manage property listing on housing sites.
+core = 6.x
+version = 1.0
+package = Podium

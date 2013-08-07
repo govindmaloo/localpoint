@@ -1,0 +1,468 @@
+<?php
+
+/**
+* Implementation of hook_perm()
+*/
+function property_perm() {
+  return array(
+  'administer property'  ,'access property'
+  );
+}
+
+/**
+* Implementation of hook_menu()
+*/
+function property_menu() {
+  
+  $items['property/list/%'] = array(
+    'title' => t('Properties List'),
+    'page callback' => 'property_list',
+    'page arguments' => array(2),
+    'file' => 'property.pages.inc',
+	'access arguments' => array('access property'),
+    'description' => t('Property Search Results in List view.'),
+    'type' => MENU_CALLBACK,
+  );
+  $items['property/map/%'] = array(
+    'title' => t('Properties List'),
+    'page callback' => 'property_map',
+    'page arguments' => array(2),
+    'file' => 'property.pages.inc',
+    'access arguments' => array('access property'),
+    'description' => t('Property Search Results in Map View'),
+    'type' => MENU_CALLBACK,
+  );
+  $items['property/requestappointment/%'] = array(
+    'title' => t('Property Enquiry'),
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array(property_appointment),
+    'file' => 'property.pages.inc',
+    'access arguments' => array('access property'),
+    'description' => t('Property Enquiry Request'),
+    'type' => MENU_CALLBACK,
+  );
+	
+ $items['property/viewdetails/%'] = array(
+    'title' => t('Property Details'),
+    'page callback' => 'property_viewdetails',
+    'page arguments' => array(3),
+    'file' => 'property.pages.inc',
+    'access arguments' => array('access property'),
+    'description' => t('Property Details'),
+    'type' => MENU_CALLBACK,
+  );	
+
+  $items['admin/content/property/properties'] = array(
+    'title' => t('Manage Properties'),
+    'page callback' => 'properties_select_page',
+    'page arguments' => array(3),
+    'file' => 'property.admin.inc',
+   'access arguments' => array('access property'),
+    'description' => t('Select the specific property you wish to update.'),
+	'type' => MENU_NORMAL_ITEM,
+    
+	
+   );
+     $items['admin/content/property/properties/list'] = array(
+    'title' => t('Manage Properties'),
+    'page callback' => 'properties_select_page',
+    'page arguments' => array(3),
+    'file' => 'property.admin.inc',
+   'access arguments' => array('administer property'),
+    'description' => t('Select the specific property you wish to update.'),
+	'type' => MENU_LOCAL_ITEM,
+    
+	
+   );
+   $items['admin/content/property/properties/add'] = array(
+    'title' => t('To Add a Property'),
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('property_add'),
+	'file' => 'property.admin.inc',
+    'access arguments' => array('administer property'),
+    'description' => t('Add a new property details.'),
+	'type' => MENU_LOCAL_ITEM,
+    
+	
+   );
+   $items['admin/content/property/%/edit'] = array(
+    'title' => t('Edit Property Details'),
+    'page callback' => 'drupal_get_form',
+    'page arguments' =>array('property_details_edit', 3),
+    'file' => 'property.admin.inc',
+    'access arguments' => array('administer property'),
+    'description' => t('Select the specific property you wish to update.'),
+    'type' => MENU_CALLBACK,
+	);
+ 
+   $items['admin/content/property/settings'] = array(
+    'title' => 'Property Module Settings',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('properties_admin'),
+	 'file' => 'property.admin.inc',
+    'access arguments' => array('administer property'),
+	'description' => 'Email and API Keys Setting',
+    'type' => MENU_NORMAL_ITEM,
+   );
+	
+	$items['admin/content/property/category/list'] = array(
+    'title' => t('Manage Property Categories'),
+    'page callback' => 'property_admin_categories_list_show',
+    'page arguments' => array(3),
+    'file' => 'property.admin.inc',
+   'access arguments' => array('administer property'),
+    'description' => t('View the list of property categories, add and edit categories.'),
+	'type' => MENU_LOCAL_TASK,
+   );
+ 
+   $items['admin/content/property/category/%/edit'] = array(
+    'title' => t('Edit category'),
+    'access arguments' => array('administer property'),
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('property_category_edit', 'edit', 4),
+    'file' => 'property.admin.inc',
+    'description' => t('Edit a repair category.'),
+    'type' => MENU_CALLBACK,
+  );
+  $items['admin/content/property/category/add'] = array(
+    'title' => t('Add category'),
+    'access arguments' => array('administer property'),
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('property_category_edit', 'add'),
+    'file' => 'property.admin.inc',
+    'description' => t('Add a Property category.'),
+    'type' => MENU_LOCAL_TASK,
+  );
+	
+  return $items;
+}
+function property_category_insert_form_submit($form, &$form_state) {
+  
+  $sql_query = "INSERT INTO {property_category} (category) VALUES ( '%s')";
+
+  //upload image file and get image id
+  
+  $destination = $_SERVER['DOCUMENT_ROOT'] . base_path().file_directory_path().'/images/';
+ 
+    if ($success = db_query($sql_query,
+         $form_state['values']['title'])) {
+      
+      // Tell the user that the property category has been submitted.
+      drupal_set_message(t('The property category "' . $form_state['values']['title'] . '" has been submitted.'));
+    } else { // If there's an error, tell the user to try again.
+      drupal_set_message(t('There was an error saving the property category "'.$form_state['values']['title'].'". Please try again.'));
+    }
+} 
+
+
+// Saves property category
+// Display confirmation to user
+function property_category_edit_form_submit($form, &$form_state) {
+  $cid=$form_state['values']['cid'];
+ 
+  $sql_query = "UPDATE {property_category}  set category='%s' WHERE cid=$cid";
+
+
+
+	if ($success = db_query($sql_query,$form_state['values']['title'])) {
+
+      // Tell the user that the property category has been updated.
+      drupal_set_message(t('The property category "'.$form_state['values']['title'].'" has been updated.'));
+    } else { // If there's an error, tell the user to try again.
+      drupal_set_message(t('There was an error updating the property category "'.$form_state['values']['title'].'". Please try again.'));
+    }
+
+}
+
+// Deletes property category
+// Display confirmation to user
+function property_category_delete_form_submit($form, &$form_state) {
+  $cid=$form_state['values']['cid'];
+  $sql_query = "DELETE from {property_category} WHERE cid=$cid";
+  if($success=db_query($sql_query)) {
+   // Tell the user that the property category has been deleted.
+      drupal_set_message(t('The property category "'.$form_state['values']['title'].'" has been deleted.'));
+	 
+  } else { // If there's an error, tell the user to try again.
+      drupal_set_message(t('There was an error deleting the property category "'.$form_state['values']['title'].'". Please try again.'));
+
+  }
+
+}
+
+function properties_admin_submit($form, &$form_state) {
+variable_set('properties_email',$form_state['values']['email']);
+variable_set('property_google_maps_API',$form_state['values']['GoogleMapsAPI']);  
+variable_set('property_google_ajax_search_API',$form_state['values']['GoogleAjaxSearchAPI']); 
+variable_set('property_lat',$form_state['values']['centerlat']); 
+variable_set('property_long',$form_state['values']['centerlong']); 
+variable_set('property_zoom',$form_state['values']['zoom']); 
+drupal_set_message(t('All Your Settings are Stored'));
+}
+/**
+ * Implementation of hook_block().
+ *
+ * Search properties block
+ */
+function property_block($op = 'list', $delta = 0) {
+
+  if ($op == "list") {
+     $block[0]["info"] = t('Property Search');
+	 $block[1]["info"] = t('Property Categories');
+     return $block;
+  } else if ($op == 'view'){
+	 switch($delta) {
+      case 0:
+    $block['content'] = drupal_get_form('property_search_form');
+    $block['subject'] = 'Search Block';
+	break;
+	case 1:
+	$result = db_query('SELECT category FROM {property_category}');
+	$options=array();
+	$options[0]="All";
+	$i=1;
+	while ($category = db_fetch_object($result)) {
+      $options[$i] = $category->category; 
+	  $i++;
+    }
+	for($i=0;$i<sizeof($options);$i++)
+	{
+		$href="/property/list/".$options[$i];
+		$op1.='<a href="'.$href.'">'.$options[$i].'</a><br/>';
+	}	
+    $block['content'] =$op1;
+    $block['subject'] = 'Property Categories';
+	break;
+	}
+    return $block;
+    }
+}
+
+function property_search_form()
+{
+   $form = array(
+    '#type' => 'fieldset',
+    '#title' => t('Property Search form'),
+    '#collapsible' => FALSE,
+    '#collapsed' => FALSE,
+	'#submit' => array('property_search_form_submit'),
+  );
+    $form['rent'] = array(
+    '#type' => 'select',
+    '#title' => t('Rent Range'),
+    '#default_value' => 'any',
+    '#options' => array ('any'=>t('Any'),1=>t('<400'),2=> t('400-700'), 3=>t('700-1000'),4=>t('>1000')),
+    '#required' => TRUE,
+  );
+ 
+
+ $form['bedrooms'] = array(
+    '#type' => 'select',
+    '#title' => t('Number of Bedrooms'),
+    '#default_value' => 'any',
+    '#options' => array ('any'=>t('Any'),1=>t('1'),2=> t('2'),3=> t('3'),4=>t('4'),5=>t('5')),
+    '#required' => TRUE,
+  );
+  $form['furnished'] = array(
+    '#type' => 'select',
+    '#title' => t('furnished/unfurnished'),
+    '#options' => array ('any'=>t('Any'),'f'=>t('Furninshed'),'uf'=> t('Unfurnished')),
+	'#required' => TRUE,
+	'#default_value' => any,
+  );
+  $form['viewdisplay'] =array (
+    '#type' => 'select',
+	'#title' => t('View'),
+	'#options' => array ('listd'=>t('list'), 'map'=>t('map')),
+	'#default_value' => listd,
+  );
+    $form['submit'] = array(
+    '#type' => 'submit',
+    '#value' => 'Search',
+  );
+  
+  //$output=drupal_render_form("property_search_form",$form);
+  return $form;
+} 
+function property_search_form_submit($form_id, &$form_state) {
+  $_SESSION['property']=$form_state['values'];
+  if ($form_state['values']['viewdisplay'] == 'listd') {
+  
+   $form_state['redirect'] = 'property/list/All';
+  }
+  if ($form_state['values']['viewdisplay'] == "map") {
+  $form_state['redirect'] = 'property/map/All';
+  }
+}
+function property_appointment_submit($form, &$form_state) {
+        $to=variable_get('properties_email', 'lakella@ces.co.uk');
+		$FromEmail=$form_state['values']['email'];
+		$Subject='Request for Enquiry';
+		$message='<b>Property Area: </b>'.$form_state['values']['area'].'<br/>';
+		$message.='<b>Property PostCode: </b> '.$form_state['values']['pc'].' <br/>';
+		$message.='<b>Message:  </b>'.$form_state['values']['description']." <br/>";
+		$message.='<b>Name: </b> '.$form_state['values']['name']." <br/>";
+		$message.='<b>Contact Number: </b> '.$form_state['values']['phone']." <br/>";
+		$message.='<b>Email: </b> '.$form_state['values']['email']." <br/>";
+		//$headers.= "MIME-Version: 1.0\r\n";
+		$headers.= "Content-Type: text/html; charset=ISO-8859-1\r\n";
+		$smtp_server = "ces-notes1";//"ces-notes1";
+		$port = 25;
+		$mydomain = "ideal.ces.co.uk";
+		$header  = "From: ".$FromEmail."\r\n"; 
+		$header .= "Content-type: text/html\r\n"; 
+		ini_set('SMTP','ces-notes1') ;
+		mail($to, $Subject, $message, $header);
+		drupal_set_message('Enquiry Request Received');
+
+
+}
+function property_insert_form_submit($form, &$form_state)
+{
+$sql_query = "INSERT INTO {property_details} (category,area, rent, description,summary,lettype, bedrooms, bathrooms, receptionrooms, kitchen, heating, propertytype, floor, buildingstyle, availabledate, furnished, taxband, parking, postcode,resctrictions, additionalfeatures,garden,images) VALUES ('%s', '%s','%s','%s','%s','%s','%d','%d','%d', '%s','%s','%s','%s','%s', '%s','%s','%s','%s','%s', '%s','%s','%s','%s')";
+
+  //upload image file and get image id
+  $images='';
+  
+  for($i=0;$i<15;$i++)
+  {
+  $destination = $_SERVER['DOCUMENT_ROOT'] . base_path().file_directory_path().'/images/';
+  $s="image".$i;
+  
+  if ($file = file_save_upload($s,$destination)) {
+ 
+    file_copy($file, $destination, FILE_EXISTS_REPLACE);
+    $imgnode = image_create_node_from($file->filepath, $form_state['values']['area'].$i);
+    _image_build_derivatives($imgnode);
+	 if($i!=0)
+	 $images.=','.$imgnode->nid;
+	 else
+	 $images.=$imgnode->nid;
+	
+    }
+  }
+    if ($success = db_query($sql_query,
+	$form_state['values']['category'],
+    $form_state['values']['area'],
+    $form_state['values']['rent'],
+    $form_state['values']['desc'],
+	$form_state['values']['summary'],
+	$form_state['values']['lettype'],
+    $form_state['values']['bedrooms'],
+	  $form_state['values']['bathrooms'],
+	  $form_state['values']['receptionrooms'],
+	  $form_state['values']['kitchen'], 
+	  $form_state['values']['heating'],
+	  $form_state['values']['propertytype'],
+    $form_state['values']['floor'],
+	  $form_state['values']['buildingstyle'],
+	  $form_state['values']['availabledate'],
+	  $form_state['values']['furnished'],
+	  $form_state['values']['taxband'],
+	  $form_state['values']['parking'],
+	  $form_state['values']['postcode'],
+	  $form_state['values']['restrictions'],	 
+	  $form_state['values']['additionalfeatures'],
+	  $form_state['values']['garden'],
+	  $images )) {
+      
+      // Tell the user that the property has been added
+      drupal_set_message(t('The property "' . $form_state['values']['area'] . '" has been submitted.'));
+    } else { // If there's an error, tell the user to try again.
+      drupal_set_message(t('There was an error saving the property "'.$form_state['values']['area'].'". Please try again.'));
+    }
+}
+function property_edit_form_submit($form, &$form_state)
+{
+	 $pid=$form_state['values']['pid'];
+ 
+  $sql_query = "UPDATE {property_details} SET category='%s',area='%s', rent='%s',summary='%s',lettype='%s', description='%s', bedrooms='%d', bathrooms='%d', receptionrooms='%d', kitchen='%s', heating='%s', propertytype='%s', floor='%s', buildingstyle='%s', availabledate='%s', furnished='%s', taxband='%s', parking='%s', postcode='%s',resctrictions='%s', additionalfeatures='%s',garden='%s',images='%s' WHERE pid=$pid";
+  $res=db_result(db_query('select images from  {property_details} where pid='.$pid));
+
+  $images=explode(',',$res);
+  
+  $imagearr=array();
+	for($i=0;$i<15;$i++)
+	{
+		
+	if ($_FILES['files']['name']['image'.$i]) {
+		//use the new imageec
+   
+		$destination = $_SERVER['DOCUMENT_ROOT'] . base_path().file_directory_path().'/images/';
+		if ($file = file_save_upload('image'.$i,$destination))
+		{
+			file_copy($file, $destination, FILE_EXISTS_REPLACE);
+      $imgnode = image_create_node_from($file->filepath, $form_state['values']['pid'.$i]);
+   
+	  _image_build_derivatives($imgnode);
+
+		} else {
+			drupal_set_message(t('There was an error saving your new property image. Please try again.'));
+		}
+		$imagearr[$i] = $imgnode->nid;
+	}
+	else
+	{
+		
+  
+    if($images[$i]!='')
+		$imagearr[$i]=$images[$i];
+		else
+		$imagearr[$i]='';
+	}
+	if($form_state['values']['img'.$i]=="1")
+	$imagearr[$i]="";
+	}
+	$imagesop='';
+	for($i=0;$i<15;$i++)
+	{
+		if($i!=0)
+		$imagesop.=','.$imagearr[$i];
+		else
+		$imagesop.=$imagearr[$i];
+	}
+
+
+	if ($success = db_query($sql_query,
+	  $form_state['values']['category'],
+	  $form_state['values']['area'],
+      $form_state['values']['rent'],
+	  $form_state['values']['summary'],
+	  $form_state['values']['lettype'],
+      $form_state['values']['desc'],
+      $form_state['values']['bedrooms'],
+	  $form_state['values']['bathrooms'],
+	  $form_state['values']['receptionrooms'],
+	  $form_state['values']['kitchen'], 
+	  $form_state['values']['heating'],
+	  $form_state['values']['propertytype'],
+      $form_state['values']['floor'],
+	  $form_state['values']['buildingstyle'],
+	  $form_state['values']['availabledate'],
+	  $form_state['values']['furnished'],
+	  $form_state['values']['taxband'],
+	  $form_state['values']['parking'],
+	  $form_state['values']['postcode'],
+	  $form_state['values']['restrictions'],	 
+	  $form_state['values']['additionalfeatures'],
+	  $form_state['values']['garden'],
+	  $imagesop )) {
+
+      // Tell the user that the property has been updated.
+      drupal_set_message(t('The property "'.$form_state['values']['area'].'" has been updated.'));
+    } else { // If there's an error, tell the user to try again.
+      drupal_set_message(t('There was an error updating the propertydetails "'.$form_state['values']['area'].'". Please try again.'));
+    }
+}
+function property_delete_form_submit_validate($form, &$form_state)
+{
+	  $cid=$form_state['values']['pid'];
+  $sql_query = "DELETE from {property_details} WHERE pid=$cid";
+  if($success=db_query($sql_query)) {
+   // Tell the user that the repair category has been deleted.
+      drupal_set_message(t('The property "'.$form_state['values']['area'].'" has been deleted.'));
+  } else { // If there's an error, tell the user to try again.
+      drupal_set_message(t('There was an error deleting the repair category "'.$form_state['values']['area'].'". Please try again.'));
+
+  }
+}

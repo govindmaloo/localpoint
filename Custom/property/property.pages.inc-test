@@ -1,0 +1,347 @@
+<?php
+function property_list()
+{
+
+$p=$_SESSION['property'];
+drupal_add_css(drupal_get_path('module', 'property') .'/property.css');
+unset($_SESSION['property']);
+$rent=$p['rent'];
+$bed=$p['bedrooms'];
+$f=$p['furnished'];
+
+//Rent Query
+if($rent=="1")
+$rentquery="rent < '400'";
+if($rent=="2")
+$rentquery="(rent > '400') and (rent <= '700') ";
+if($rent=="3")
+$rentquery="(rent > '700') and (rent <= '1000') ";
+if($rent=="4")
+$rentquery="rent > '1000'";
+if($rent=="any")
+$rentquery="rent > '0'";
+
+//Furnished Query
+if($f=="any")
+$furnishedquery="(furnished = 'Furnished') or (furnished = 'Unfurnished')";
+if($f=="f")
+$furnishedquery="furnished = 'Furnished'";
+if($f=="uf")
+$furnishedquery="furnished = 'Unfurnished'";
+
+//BedRooms Query
+if($bed=="1")
+$bedquery="bedrooms = '1'";
+if($bed=="2")
+$bedquery="bedrooms = '2'";
+if($bed=="3")
+$bedquery="bedrooms = '3'";
+if($bed=="4")
+$bedquery="bedrooms = '4'";
+if($bed=="5")
+$bedquery="bedrooms = '5'";
+if($bed=="any")
+$bedquery="bedrooms > '0'";
+
+if(($rentquery!='')&&($furnishedquery!='')&&($bedquery!=''))
+$count = db_result(db_query('SELECT count(*) FROM {property_details} where (('.$rentquery.') and ('.$furnishedquery.') and ('.$bedquery.'))'));
+
+if($count > 0) 
+{
+	$sqlquery='select * from {property_details} where (('.$rentquery.') and ('.$furnishedquery.') and ('.$bedquery.'))';
+	
+	$res=pager_query(db_rewrite_sql($sqlquery), 20, 0, NULL, $count);
+	$op.="<table class=\"sortable\"><thead><tr><td colspan='2'></td></tr></thead><tbody>";
+	while($arr=db_fetch_array($res))
+	{
+		$img=explode(',',$arr[images]);
+		
+		$fid=db_result(db_query('select fid from {image} where ((nid="'.$img[0].'") and (image_size="_original"))'));
+	$filepath=db_result(db_query('select filepath from {files} where fid="'.$fid.'"'));
+		$op.="<tr><td valign='top' width='25%'>".image_display(node_load($img[0]), 'original')."<img src='http://".$_SERVER['HTTP_HOST']."/testsite/".$filepath."' /></td><td align=\"left\" width='75%'><b>".$arr['area']."<br/>Rent: &pound;".$arr['rent']."pcm <br/><br/>Available From: ".$arr['availabledate']."<br/><br/></b>".$arr['description']."<br/><br/>".$arr['furnished']."<br/><b>Council Tax:</b>".$arr['taxband']."<br/><br/> <a href='http://maps.google.co.uk/?q=".$arr['postcode']."' target='_blank'>Location <img src='http://".$_SERVER['HTTP_HOST']."/testsite/sites/all/modules/property/images/images.jpeg' border='0' height='30' style='text-decoration: none;' width='30'/></a>&nbsp;<a href='#' onclick='window.open(\"http://".$_SERVER['HTTP_HOST']."/testsite/property/requestappointment/".$arr['pid']."\")'>Appointment <img src='http://".$_SERVER['HTTP_HOST']."/testsite/sites/all/modules/property/images/appointment.jpeg' border='0' height='30' width='30'/></a>&nbsp;<a href='#' onclick='window.open(\"http://".$_SERVER['HTTP_HOST']."/testsite/property/viewdetails/".$arr['pid']."\")'> More Information <img src='http://".$_SERVER['HTTP_HOST']."/testsite/sites/all/modules/property/images/infor.jpeg' border='0' height='30' width='30'/></a>&nbsp;<a href='http://www.upmystreet.com/local/my-neighbours/l/".$arr['postcode'].".html' target='_blank'> More about Location <img src='http://".$_SERVER['HTTP_HOST']."/testsite/sites/all/modules/property/images/locationdiscovery.jpeg' border='0' height='30' width='30'/></a></td></tr>";
+		$op.="<tr><td></td></tr><tr><td colspan='2'><hr/></td></tr>";
+	 
+	  
+	}
+	$op.="</tbody></table>";
+}	$op.=theme('pager', NULL, 20, 0);
+  
+return $op;
+}
+function property_map()
+{
+
+ drupal_set_html_head('<script src="'. check_url(url('http://maps.google.com/maps?file=api&amp;v=2&amp;key=ABQIAAAA2rtNhlA4BAZ4qAIGI7ZckRR6Ui9nLGikYzMIerFb4nP3lkfbDxQsx3TD1LTX1idDyB4W4BX_xrlAtg')) .'" type="text/javascript"></script>');
+ 
+drupal_set_html_head('<script src="'. check_url(url('http://www.google.com/uds/api?file=uds.js&v=1.0&key=ABQIAAAANUKs-h2CoZG3fHpV9IoPgxT2yXp_ZAY8_ufC3CFXhHIE1NvwkxSXHmsO88-yVnXxRJVwZFp8hxxmVQ')) .'" type="text/javascript"></script>');
+
+drupal_set_html_head('<script src="'. check_url(url('http://gmaps-utility-library.googlecode.com/svn/trunk/markermanager/release/src/markermanager_packed.js')) .'" type="text/javascript"></script>');
+
+//$external_js = 'http://'.$_SERVER['HTTP_HOST'].'/testsite/'.drupal_get_path('module', 'property') . '/gmap.js';
+drupal_add_js(drupal_get_path('module', 'property') . '/gmap.js');
+
+//$external_js = 'http://'.$_SERVER['HTTP_HOST'].'/testsite/'.drupal_get_path('module', 'property') . '/Tooltip.v1.js';
+drupal_add_js(drupal_get_path('module', 'property') . '/Tooltip.v1.js');
+
+
+$p=$_SESSION['property'];
+drupal_add_css(drupal_get_path('module', 'property') .'/property.css');
+unset($_SESSION['property']);
+$rent=$p['rent'];
+$bed=$p['bedrooms'];
+$f=$p['furnished'];
+
+//Rent Query
+if($rent=="1")
+$rentquery="rent < '400'";
+if($rent=="2")
+$rentquery="(rent > '400') and (rent <= '700') ";
+if($rent=="3")
+$rentquery="(rent > '700') and (rent <= '1000') ";
+if($rent=="4")
+$rentquery="rent > '1000'";
+if($rent=="any")
+$rentquery="rent > '0'";
+
+//Furnished Query
+if($f=="any")
+$furnishedquery="(furnished = 'Furnished') or (furnished = 'Unfurnished')";
+if($f=="f")
+$furnishedquery="furnished = 'Furnished'";
+if($f=="uf")
+$furnishedquery="furnished = 'Unfurnished'";
+
+//BedRooms Query
+if($bed=="1")
+$bedquery="bedrooms = '1'";
+if($bed=="2")
+$bedquery="bedrooms = '2'";
+if($bed=="3")
+$bedquery="bedrooms = '3'";
+if($bed=="4")
+$bedquery="bedrooms = '4'";
+if($bed=="5")
+$bedquery="bedrooms = '5'";
+if($bed=="any")
+$bedquery="bedrooms > '0'";
+
+if(($rentquery!='')&&($furnishedquery!='')&&($bedquery!=''))
+$count = db_result(db_query('SELECT count(*) FROM {property_details} where (('.$rentquery.') and ('.$furnishedquery.') and ('.$bedquery.'))'));
+
+if($count > 0) 
+{
+	$sqlquery='select * from {property_details} where (('.$rentquery.') and ('.$furnishedquery.') and ('.$bedquery.'))';
+	
+	$res=db_query($sqlquery);
+	$property=array();
+	$i=0;
+	while($arr=db_fetch_array($res))
+	{
+		$img=explode(',',$arr[images]);
+		$postcode=$arr['postcode'];
+		$tooltip="<strong>".$arr['area']."</strong><br/>".$arr['bedrooms']." Bedrooms<br/><strong>Rent:</strong>&nbsp;&pound;".$arr['rent']."&nbsp;per&nbsp;month";
+		$fid=db_result(db_query('select fid from {image} where ((nid="'.$img[0].'") and (image_size="thumbnail"))'));
+	    $filepath=db_result(db_query('select filepath from {files} where fid="'.$fid.'"'));
+		$op.="<table ><tbody>";
+		$op.="<tr><td valign='top' width='25%'>".image_display(node_load($img[0]), 'original')."<img src='http://".$_SERVER['HTTP_HOST']."/testsite/".$filepath."' /></td><td align='left' width='75%'><font size='1'><b>".$arr['area']."<br/>Rent: &pound;".$arr['rent']."pcm <br/>Available From: ".$arr['availabledate']."<br/></b>".$arr['description']."<br/>".$arr['furnished']."<br/><b>Council Tax:</b>".$arr['taxband']."<br/> <a href='http://maps.google.co.uk/?q=".$arr['postcode']."' target='_blank'>Location <img src='http://".$_SERVER['HTTP_HOST']."/testsite/sites/all/modules/property/images/images.jpeg' border='0' height='30' style='text-decoration: none;' width='30'/></a>&nbsp;<a href='http://".$_SERVER['HTTP_HOST']."/testsite/property/requestappointment/".$arr['pid']."' target='_blank' >Appointment <img src='http://".$_SERVER['HTTP_HOST']."/testsite/sites/all/modules/property/images/appointment.jpeg' border='0' height='30' width='30'/></a>&nbsp;<a href='http://".$_SERVER['HTTP_HOST']."/testsite/property/viewdetails/".$arr['pid']."' target='_blank'> More Information <img src='http://".$_SERVER['HTTP_HOST']."/testsite/sites/all/modules/property/images/infor.jpeg' border='0' height='30' width='30'/></a>&nbsp;<br/><a href='http://www.upmystreet.com/local/my-neighbours/l/".$arr['postcode'].".html' target='_blank'> More about Location <img src='http://".$_SERVER['HTTP_HOST']."/testsite/sites/all/modules/property/images/locationdiscovery.jpeg' border='0' height='30' width='30'/></a></font></td></tr>";
+		$op.="</tr></tbody></table>";
+	 $property[$i]['tooltip']=$tooltip;
+	 $property[$i]['data']=$op;
+	 $property[$i]['postcode']=$postcode;
+	 $op='';
+	  $i++;
+	}
+	
+}	
+ //print_r($property); 
+$ot='<div id="map" style="width:540px; height:540px"></div>';
+
+
+$ot.='<script type="text/javascript">//<![CDATA[
+		addLoadEvent(mapLoad);
+		addLoadEvent(function() {';
+
+
+for($i=0;$i<count($property);$i++)
+{	
+	$ot.='usePointFromPostcode_top("'.$property[$i]['postcode'].'","'.$property[$i]['tooltip'].'","'.$property[$i]['data'].'",cbfunction);';
+
+}
+$ot.='	showMap();
+			
+		});
+
+	//]]></script>';
+
+return $ot;
+}
+
+function property_appointment(){
+$URLexplosion = explode('/', str_replace('//', '/', $_SERVER['REQUEST_URI']));
+$URLlastpart = (count($URLexplosion)-1);
+$content = $URLexplosion[$URLlastpart];
+$area=db_result(db_query('select area from {property_details} where pid='.$content));
+$postcode=db_result(db_query('select postcode from {property_details} where pid='.$content));
+$form = array(
+    '#type' => 'fieldset',
+    '#title' => t('Property Appointment Request form'),
+    '#collapsible' => FALSE,
+    '#collapsed' => FALSE,
+	'#submit' => array('property_appointment_submit'),
+  );
+  $form['#prefix'] ='Appointment for Property '.$area.' '.$postcode;
+  $form['area'] = array(
+    '#type' => 'hidden',
+    '#default_value' => $area,
+   );
+   $form['pc'] = array(
+    '#type' => 'hidden',
+    '#default_value' => $postcode,
+   );
+    $form['name'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Name'),
+    '#default_value' => '',
+    '#required' => TRUE,
+  );
+    $form['email'] = array(
+    '#type' => 'textfield',
+    '#title' => t('email'),
+    '#default_value' => '',
+    '#required' => TRUE,
+  );
+   $form['phone'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Contact Number'),
+    '#default_value' => '',
+    '#required' => TRUE,
+  );
+   $form['description'] = array(
+    '#type' => 'textarea',
+    '#title' => t('Msg'),
+    '#default_value' => '', 
+    '#cols' => 30, 
+    '#rows' => 5, 
+    '#description' => t('Enter the Msg.'),
+    '#required' => TRUE,
+  );
+
+    $form['submit'] = array(
+    '#type' => 'submit',
+    '#value' => 'Send',
+  );
+  
+    return $form;
+}
+function property_viewdetails()
+{
+	drupal_add_css(drupal_get_path('module', 'property') .'/property.css');
+	$URLexplosion = explode('/', str_replace('//', '/', $_SERVER['REQUEST_URI']));
+	$URLlastpart = (count($URLexplosion)-1);
+	$pid = $URLexplosion[$URLlastpart];
+	$before=$URLexplosion[$URLlastpart-1];
+	//echo $pid;
+	//echo $before;
+	if($before=="viewdetails")
+	{
+	$count=db_result(db_query('select count(*) from {property_details} where pid='.$pid));
+	//echo $count;
+	if($count>0)
+	{
+		$res=db_query('select * from {property_details} where pid='.$pid);
+		while($row=db_fetch_array($res))
+		{
+			$arr=array();
+			$arr=$row;
+			$area=$arr['area'];
+			$rent=$arr['rent'];
+			$bed=$arr['bedrooms'];
+			$ad=$arr['availabledate'];
+			$des=$arr['description'];
+			$pc=$arr['postcode'];
+			$reception=$arr['receptionrooms'];
+			$bathrooms=$arr['bathrooms'];
+			$kitchen=$arr['kitchen'];
+			$heating=$arr['heating'];
+			$propertytype=$arr['propertytype'];
+			$floor=$arr['floor'];
+			$buildingstyle=$arr['buildingstyle'];
+			$availabledate=$arr['availabledate'];
+			$furnished=$arr['furnished'];
+			$taxband=$arr['taxband'];
+			$parking=$arr['parking'];
+			$postcode=$arr['postcode'];
+			$restrictions=$arr['resctrictions'];
+			$additional=$arr['additionalfeatures'];
+			$garden=$arr['garden'];
+			$img=explode(',',$arr['images']);
+			
+		}
+	   $op='<div><div class="propertylistingone">
+          <h2>'.$area.'</h2>
+          <p><strong>Rent:</strong> &pound;'.$rent.' per month<br />
+          <strong>Bedrooms:</strong> '.$bed.'<br />
+		  <strong>Kitchen:</strong> '.$kitchen.'<br />
+		  <strong>Bathroom:</strong> '.$bathrooms.'<br />
+		  <strong>Reception Rooms:</strong> '.$reception.'<br />
+          <strong>Availability Date:</strong>  '.$ad.'</p>
+                    <p>'.$des.'</p>
+					<p> <h2>Additional Details</h2>
+          
+            <strong>Furnished</strong>: '.$furnished.'<br/>
+            <strong>Property Type</strong>: '.$propertytype.'<br/>
+            <strong>Floor</strong>: '.$floor.'<br/>
+
+            <strong>Building Style</strong>: '.$buildingstyle.'<br/>
+            <strong>Heating</strong>: '.$heating.'<br/>
+            <strong>Parking</strong>: '.$parking.'<br/>
+            <strong>Garden</strong>: '.$garden.'<br/>
+            <strong>Council Tax Band</strong>: '.$taxband.'<br/>
+
+            <strong>Restrictions</strong>: '.$restrictions.'<br/>
+            <strong>Additional Features</strong>: '.$additional.'<br/>
+          </p>
+          <div>
+<a href="http://maps.google.co.uk/?q='.$arr['postcode'].'" target="_blank">Location <img src="http://'.$_SERVER['HTTP_HOST'].'/testsite/sites/all/modules/property/images/images.jpeg" border="0" height="30" style="text-decoration: none;" width="30"/></a>&nbsp;<a href="http://'.$_SERVER['HTTP_HOST'].'/testsite/property/requestappointment/'.$arr['pid'].'" target="_blank" >Appointment <img src="http://'.$_SERVER['HTTP_HOST'].'/testsite/sites/all/modules/property/images/appointment.jpeg" border="0" height="30" width="30"/></a>&nbsp;<a href="http://www.upmystreet.com/local/my-neighbours/l/'.$arr['postcode'].'.html" target="_blank"> More about Location <img src="http://'.$_SERVER['HTTP_HOST'].'/testsite/sites/all/modules/property/images/locationdiscovery.jpeg" border="0" height="30" width="30"/></a>
+</div>
+
+        </div>';
+		$filepaths=array();
+		for($i=0;$i<(count($img));$i++)
+		{
+		$fid=db_result(db_query('select fid from {image} where ((nid="'.$img[0].'") and (image_size="_original"))'));
+	$filepath=db_result(db_query('select filepath from {files} where fid="'.$fid.'"'));
+	$filepaths[$i]="http://".$_SERVER['HTTP_HOST']."/testsite/".$filepath;
+	}
+        $op.='<div class="propertylistingtwo">
+          <a id="primarygallerylink" href="'.$filepaths[0].'" rel="lightshow[gallery]"><img src="'.$filepaths[0].'" alt="" id="primarydetail" width="86%" align="left"/></a>';
+for($i=0;$i<(count($filepaths)-1);$i++)
+{
+$op.='<a class="othergallerylink" href="'.$filepaths[$i].'" rel="lightshow[gallery]"><img src="'.$filepaths[$i].'" alt="'.$area.'" class="gallery" /></a>';
+}
+$val=((count($filepaths)-1)%3);
+if($val!=0)
+{
+echo "in if";
+for($k=1;$k<$val;$k++)
+{
+echo "in for";
+$op.='<img src="http://www.benproperty.co.uk/images/galleryfiller.png" alt="" class="gallery" />';
+}
+}
+$op.='<p id="gallerylegend" class="screenhelper" ><span>Click on an image to see an enlarged view</span></p>         
+        </div>
+		</div>
+      ';
+	return $op;
+	}
+	else
+	{
+		drupal_set_message('No Property with that Property Id');
+	}
+	}
+	else
+	{
+		drupal_set_message('No Property with that Property Id');
+	}
+}

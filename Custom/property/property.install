@@ -1,0 +1,162 @@
+<?php
+
+/**
+ * Implementation of hook_schema().
+*/
+function property_schema() {
+  $schema['property_details'] = array (
+    'description' => 'Table to hold information about each property.',
+    'fields' => array(
+  'pid' => array(
+       'description' => 'Primary Key: repair category identifier.',
+        'type' => 'serial',
+        'unsigned' => TRUE,
+        'not null' => TRUE),
+  'rent' => array(
+        'description' => 'Rent of the property',
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => 0),
+  'area' => array(
+        'description' => 'location name',
+        'type' => 'varchar',
+        'length' => 100,
+        'not null' => TRUE),
+  'description' => array(
+        'description' => 'The  description of the property.',
+        'type' => 'text',
+        'not null' => TRUE,
+        'size' => 'big'),
+  'bedrooms' => array(
+        'description' => 'Number of bedrooms.',
+        'type' => 'int',
+        'not null' => TRUE,
+        ),
+  'receptionrooms' => array(
+        'description' => 'Number of reception rooms',
+        'type' => 'int',
+        'not null' => FALSE,
+        'default' => 0),
+	'bathrooms' => array(
+        'description' => 'Number of bath rooms',
+        'type' => 'int',
+        'not null' => FALSE,
+        'default' => 0),
+	 'kitchen' => array(
+        'description' => 'Kitchen ',
+        'type' => 'varchar',
+        'length' => 100,
+        'not null' => FALSE),
+	'heating' => array(
+        'description' => 'Heating ',
+        'type' => 'varchar',
+        'length' => 100,
+        'not null' => TRUE),
+	'propertytype' => array(
+        'description' => 'Type of Property ',
+        'type' => 'varchar',
+        'length' => 100,
+        'not null' => FALSE),
+	 'floor' => array(
+        'description' => 'floor on which the Property Exists ',
+        'type' => 'varchar',
+        'length' => 100,
+        'not null' => FALSE),
+	 'buildingstyle' => array(
+        'description' => 'building type in which Property exists ',
+        'type' => 'varchar',
+        'length' => 100,
+        'not null' => FALSE),
+		  
+	 'availabledate' => array(
+        'description' => 'available date of the property',
+        'type' => 'varchar',
+        'length' => 100,
+        'not null' => TRUE),
+	 'furnished' => array(
+        'description' => 'furnished ',
+        'type' => 'varchar',
+        'length' => 100,
+        'not null' => TRUE),
+	'taxband' => array(
+        'description' => 'Council Tax Band ',
+        'type' => 'varchar',
+        'length' => 10,
+        'not null' => FALSE),	
+	'parking' => array(
+        'description' => 'parking ',
+        'type' => 'varchar',
+        'length' => 100,
+        'not null' => FALSE),
+	'postcode' => array(
+        'description' => 'Postcode',
+        'type' => 'varchar',
+        'length' => 8,
+        'not null' => TRUE),
+	'lettype' => array(
+        'description' => 'Lettype',
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => FALSE),
+	'resctrictions' => array(
+        'description' => 'restrictions to live in that property.',
+        'type' => 'text',
+        'not null' => FALSE,
+        'size' => 'big'),
+	'summary' => array(
+        'description' => 'The description of additional features of the property.',
+        'type' => 'varchar',
+        'not null' => TRUE,
+        'length' => '255'),
+	'additionalfeatures' => array(
+        'description' => 'The description of additional features of the property.',
+        'type' => 'text',
+        'not null' => TRUE,
+        'size' => 'big'),
+	'images' => array(
+        'description' => 'The description of additional features of the property.',
+        'type' => 'text',
+        'not null' => TRUE,
+        'size' => 'big'),
+	'garden' => array(
+        'description' => 'The description of additional features of the property.',
+        'type' => 'varchar',
+        'not null' => TRUE,
+         'length' => '100'),
+    ),
+    'primary key' => array('pid'),
+  );
+  $schema['property_category'] = array (
+  'fields' => array(
+  'category' => array(
+        'description' => 'category.',
+        'type' => 'varchar',
+        'not null' => TRUE,
+         'length' => '255'),
+   'cid' => array(
+       'description' => 'Primary Key: property category identifier.',
+        'type' => 'serial',
+        'unsigned' => TRUE,
+        'not null' => TRUE),
+		),
+    'primary key' => array('cid'),
+	
+  );
+
+  
+  return $schema;
+}
+
+/**
+Implementation of hook_install()
+*/
+function property_install() {
+  drupal_install_schema('property');
+ }
+
+/**
+ * Implementation of hook_uninstall().
+ */
+function property_uninstall() {
+   drupal_uninstall_schema('property');
+}

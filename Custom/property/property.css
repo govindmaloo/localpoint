@@ -1,0 +1,249 @@
+a:hover{
+text-decoration:none;
+}
+a{
+text-decoration:none;
+}
+a:focus{
+text-decoration:none;
+}
+div.tooltip {
+		background:#fff;
+		border:1px solid #000;
+		padding:5px 8px;
+		font-size:12px;
+		width:137px;
+	}
+  
+
+
+
+h1.screenhelper {width:50%;}
+
+
+
+div#map {margin-left:1em;}
+
+
+
+div.propertylisting {
+
+  clear:both;
+
+min-height:14em;
+
+margin-bottom:0.5em;
+
+}
+
+ img.listingthumb {
+
+margin:1em;
+
+  float:left;
+
+}
+
+
+
+ div.propertylisting hr {
+
+color:#e6e6e6;
+
+float:left;
+
+clear:both;
+
+background:white;
+
+}
+
+ div.propertylisting h2 {
+
+  font-size:1.1em;
+
+float:right;
+
+width:34.3em;
+
+margin-left:0;
+
+padding-top:1em;
+
+margin-bottom:0.5em;
+
+color:black;
+
+}
+
+ div.propertylisting p{
+
+float:right;
+
+width:32em;
+
+margin-left:0;
+
+}
+
+ div.propertylisting strong {
+
+font-weight:bold;
+
+}
+
+ div.propertylistingone {
+
+margin-top:1em;
+
+float:left;
+
+width:300px;
+
+}
+ div.propertylistingtwo {
+
+margin-top:1em;
+
+margin-right:0;
+
+float:right;
+margin-left:0;
+
+width:250px;
+
+}
+
+ div.propertylistingone strong {
+
+font-weight:bold;
+
+}
+
+ div.propertylistingone h2 {
+
+margin-bottom:0.3em;
+
+}
+
+ div.propertylistingone a {
+
+  text-decoration:none;
+
+  color:black;
+
+}
+
+ div.propertylistingtwo h2 {
+
+margin:0.3em 0;
+
+ font-size:1.4em;
+
+}
+
+ div.propertylistingone ul {
+
+list-style-type:none;
+
+margin:0;padding:0;
+
+}
+
+ div.propertylistingone ul li {
+
+margin:1em 0;
+
+font-size:1.1em;
+
+}
+
+ div.propertylistingtwo strong {
+
+font-weight:bold; color:black;
+
+}
+
+ div.propertylistingtwo a#primarygallerylink {
+
+display:block;
+
+width:100%;
+
+text-align:left;
+
+}
+
+ div.propertylistingtwo a.othergallerylink {
+
+  text-align:center;
+
+width:9.1em;
+
+height:6.0em;
+
+float:left;
+
+border-right:1px solid white;
+
+border-top:1px solid white;
+
+overflow:hidden;
+
+background:#ffffff;
+
+}
+
+ div.propertylistingtwo img.gallery {
+
+border-right:1px solid white;
+
+width:9.1em;
+
+height:6.0em;
+
+}
+
+ p#gallerylegend {
+
+clear:both;
+
+/*margin-left:1em;*/
+
+position:relative;
+
+height:29px;
+
+/*left:1em;*/
+
+}
+
+ p#gallerylegend span {
+
+position:relative;top:0;right:1px;width:235px;height:29px;display:block;
+
+background:#ffffff url(/images/gallerylegend.png) top left no-repeat;
+
+}
+#leftcol {
+  position: relative;
+  float: right;
+  width: 200px;
+  height: 20px;
+}
+#rightcol {
+  float: right;
+  position: relative;
+  left: 200px;
+  width: 50px;
+  height: 20px;
+}
+
+
+
+
+
+
+
+
+
